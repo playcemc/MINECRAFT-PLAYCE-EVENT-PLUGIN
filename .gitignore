@@ -19,3 +19,7 @@
 Thumbs.db
 *.tmp
 *.bak
+
+# Paper/runtime-generated caches and databases
+plugins/.paper-remapped/
+plugins/**/catalog-cache.json
