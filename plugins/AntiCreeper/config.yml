@@ -1,0 +1,26 @@
+# 메시지 설정
+No-Permission-Message: '&0[&fAntiCreeper&0]&r: &c이 작업을 수행할 권한이 없습니다!'
+Ac-Command-Message: '&0[&fAntiCreeper&0]&r: &c더 많은 정보를 보려면 /ac help를 입력하세요.'
+Reload-Message: '&0[&fAntiCreeper&0]&r: &2설정이 다시 로드되었습니다!'
+
+# 폭발 제어
+Creeper-Cancel-Explosions: true
+TNT-Cancel-Explosions: true
+Wither-Skulls-Cancel-Explosions: true
+Wither-Mob-Cancel-Explosions: true
+Wither-Mob-Cancel-Block-Breaking: true
+Enable-Wither-Effect: true
+
+# 피해 제어
+Cancel-Damage-From-Creeper-Explosions: false
+Cancel-Damage-From-TNT-Explosions: false
+Cancel-Damage-From-Wither-Skulls-Explosions: false
+Cancel-Damage-From-Wither-Mob-Explosions: false
+
+# 시각/청각 효과
+Creeper-Keep-Effect: true
+TNT-Keep-Effect: true
+Wither-Skulls-Keep-Effect: true
+Creeper-Keep-Sound: true
+TNT-Keep-Sound: true
+Wither-Skulls-Keep-Sound: true

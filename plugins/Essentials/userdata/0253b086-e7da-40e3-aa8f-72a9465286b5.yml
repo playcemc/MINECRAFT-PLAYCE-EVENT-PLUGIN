@@ -1,0 +1,39 @@
+teleportenabled: true
+teleportauto: false
+godmode: false
+flymode: false
+muted: false
+jailed: false
+ip-address: 122.37.140.118
+afk: false
+socialspy: false
+npc: false
+powertoolsenabled: true
+accepting-pay: true
+baltop-exempt: false
+timestamps:
+  lastteleport: 0
+  lastheal: 0
+  mute: 0
+  jail: 0
+  onlinejail: 0
+  logout: 1791124523992
+  login: 1791120860085
+money: '0'
+last-account-name: Archangelum183
+lastlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: -9.699302885957916
+  y: -607.8384078891894
+  z: 31.195681262467225
+  yaw: -93.0631103515625
+  pitch: -20.466869354248047
+logoutlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: -24.381638839998566
+  y: 121.41902379758702
+  z: 34.86593767857188
+  yaw: 133.26986694335938
+  pitch: 8.355469703674316

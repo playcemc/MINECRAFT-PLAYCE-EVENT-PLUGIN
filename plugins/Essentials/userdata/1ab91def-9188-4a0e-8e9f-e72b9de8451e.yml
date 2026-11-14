@@ -1,0 +1,39 @@
+teleportenabled: true
+teleportauto: false
+godmode: false
+flymode: false
+muted: false
+jailed: false
+ip-address: 211.247.85.106
+afk: false
+socialspy: false
+npc: false
+powertoolsenabled: true
+accepting-pay: true
+baltop-exempt: false
+timestamps:
+  lastteleport: 0
+  lastheal: 0
+  mute: 0
+  jail: 0
+  onlinejail: 0
+  logout: 1791123358468
+  login: 1791120863603
+money: '0'
+last-account-name: smg1102
+lastlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: 1.6051640336387516
+  y: -1334.143012182898
+  z: 33.56710223686797
+  yaw: 24.750381469726562
+  pitch: 30.15005111694336
+logoutlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: -1.4428450157433974
+  y: 120.0
+  z: 24.853237668857787
+  yaw: -11.24976921081543
+  pitch: -12.899965286254883

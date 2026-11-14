@@ -1,0 +1,39 @@
+teleportenabled: true
+teleportauto: false
+godmode: false
+flymode: false
+muted: false
+jailed: false
+ip-address: 203.234.184.230
+afk: false
+socialspy: false
+npc: false
+powertoolsenabled: true
+accepting-pay: true
+baltop-exempt: false
+timestamps:
+  lastteleport: 0
+  lastheal: 0
+  mute: 0
+  jail: 0
+  onlinejail: 0
+  logout: 1792221259598
+  login: 1792221199723
+money: '0'
+last-account-name: light777777
+logoutlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: -31.362283646943
+  y: 121.0
+  z: 42.136327876345945
+  yaw: 127.0504150390625
+  pitch: 20.84996223449707
+lastlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: -28.832399632624096
+  y: 176.0
+  z: 64.18304980307869
+  yaw: 76.35001373291016
+  pitch: 21.450014114379883

@@ -1,0 +1,39 @@
+teleportenabled: true
+teleportauto: false
+godmode: false
+flymode: false
+muted: false
+jailed: false
+ip-address: 112.166.124.85
+afk: false
+socialspy: false
+npc: false
+powertoolsenabled: true
+accepting-pay: true
+baltop-exempt: false
+timestamps:
+  lastteleport: 0
+  lastheal: 0
+  mute: 0
+  jail: 0
+  onlinejail: 0
+  logout: 1791124054795
+  login: 1791120930584
+money: '0'
+last-account-name: asongi030
+logoutlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: -19.618407028301906
+  y: 121.0
+  z: 45.43498609321342
+  yaw: 6.60044002532959
+  pitch: 34.500003814697266
+lastlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: -24.161790476374854
+  y: 122.1875
+  z: 35.19279475479643
+  yaw: 52.049964904785156
+  pitch: 16.199983596801758

@@ -1,0 +1,20 @@
+prefix: '&b[PLAYCE 경도] &f'
+joined: '게임에 참가했습니다.'
+left: '게임에서 퇴장했습니다.'
+no-permission: '권한이 없습니다.'
+results:
+  victory:
+    title: '&6&l승리!'
+  defeat:
+    title: '&c&l패배'
+  stopped:
+    title: '&7게임 중단'
+    subtitle: '&f게임이 중단되었습니다.'
+  victory-police:
+    subtitle: '&f도둑 75% 이상을 탈출 실패시켰습니다!'
+  victory-thief:
+    subtitle: '&f탈출에 성공했습니다!'
+  defeat-police:
+    subtitle: '&f도둑 75% 이상 탈출 실패에 도달하지 못했습니다.'
+  defeat-thief:
+    subtitle: '&f이번 판에는 탈출하지 못했습니다.'

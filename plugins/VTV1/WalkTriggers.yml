@@ -1,0 +1,9 @@
+world:
+  -27,123,36:
+    CoolDown: 0
+    Script:
+    - '@CMDOP heal'
+  -7,147,30:
+    CoolDown: 0
+    Script:
+    - '@CMDOP heal'

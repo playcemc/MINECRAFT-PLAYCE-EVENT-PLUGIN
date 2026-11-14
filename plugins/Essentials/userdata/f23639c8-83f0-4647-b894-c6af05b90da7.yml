@@ -1,0 +1,39 @@
+teleportenabled: true
+teleportauto: false
+godmode: false
+flymode: false
+muted: false
+jailed: false
+ip-address: 175.213.211.212
+afk: false
+socialspy: false
+npc: false
+powertoolsenabled: true
+accepting-pay: true
+baltop-exempt: false
+timestamps:
+  lastteleport: 0
+  lastheal: 0
+  mute: 0
+  jail: 0
+  onlinejail: 0
+  logout: 1794235078751
+  login: 1794235009895
+money: '0'
+last-account-name: gyeome2
+lastlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: -21.033884856047127
+  y: 169.0
+  z: 57.36382981602292
+  yaw: 89.7488021850586
+  pitch: 4.587827205657959
+logoutlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: 11.19327389303089
+  y: 121.0
+  z: 32.308393598259585
+  yaw: 62.8515625
+  pitch: 42.149879455566406

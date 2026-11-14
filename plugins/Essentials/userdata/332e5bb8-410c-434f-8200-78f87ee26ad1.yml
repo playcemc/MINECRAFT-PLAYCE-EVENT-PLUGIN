@@ -1,0 +1,39 @@
+teleportenabled: true
+teleportauto: false
+godmode: false
+flymode: false
+muted: false
+jailed: false
+ip-address: 123.215.100.42
+afk: false
+socialspy: false
+npc: false
+powertoolsenabled: true
+accepting-pay: true
+baltop-exempt: false
+timestamps:
+  lastteleport: 0
+  lastheal: 0
+  mute: 0
+  jail: 0
+  onlinejail: 0
+  logout: 1792051074111
+  login: 1792050859795
+money: '0'
+last-account-name: ehofkd2
+lastlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: -32.563813227863115
+  y: 122.16610926093821
+  z: 38.93577037286682
+  yaw: 166.65025329589844
+  pitch: 16.799968719482422
+logoutlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: -5.987124343466464
+  y: 121.0
+  z: 30.63739245462079
+  yaw: -72.75048828125
+  pitch: 57.599998474121094

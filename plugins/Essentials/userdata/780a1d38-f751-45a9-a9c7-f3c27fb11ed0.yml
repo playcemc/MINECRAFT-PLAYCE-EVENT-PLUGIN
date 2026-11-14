@@ -1,0 +1,39 @@
+teleportenabled: true
+teleportauto: false
+godmode: false
+flymode: false
+muted: false
+jailed: false
+ip-address: 119.203.97.96
+afk: false
+socialspy: false
+npc: false
+powertoolsenabled: true
+accepting-pay: true
+baltop-exempt: false
+timestamps:
+  lastteleport: 0
+  lastheal: 0
+  mute: 0
+  jail: 0
+  onlinejail: 0
+  logout: 1791552183811
+  login: 1791551166995
+money: '0'
+last-account-name: Kurtzpel_
+lastlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: 31.13749998807907
+  y: 152.0
+  z: 25.452471187416403
+  yaw: -105.0159912109375
+  pitch: -65.55452728271484
+logoutlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: -12.15759445787927
+  y: 121.0
+  z: 34.408690838247054
+  yaw: 54.98822021484375
+  pitch: 18.35858154296875

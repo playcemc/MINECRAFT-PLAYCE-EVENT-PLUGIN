@@ -1,0 +1,1078 @@
+# =========================================================
+# PLAYCE 3인 협동 폭탄 해체 게임
+# Paper 1.21.1 / Skript 2.13.3 / Skript addons 없음
+# 추가 플러그인: PLAYCEBombVision 1.2.0
+#
+# 역할
+# - 말 못함(B): 매뉴얼을 읽고 /폭탄통신 GUI의 14개 신호만 사용
+# - 못 들음(C): B의 GUI 신호를 화면으로 받고, A에게 음성으로 전달
+# - 안 보임(A): 상시 실명 + 색상/ON-OFF 표시가 흑백으로 위장됨. 실제 폭탄 조작 담당
+#
+# 통신 가능 신호 (시스템은 의미를 해석하지 않음)
+# 0 1 2 3 4 5 6 7 8 9 ㅇㅇ ㄴㄴ ㅗㅗ ㅠㅠ
+#
+# 제한시간: 270초
+# 오답: 즉시 폭발 실패
+# 성공: 시작~최종 해체까지 기록을 TOP 10에 저장
+# =========================================================
+
+options:
+    bomb-prefix: &8[&c폭탄&8] &f
+    bomb-limit: 270
+
+# ---------------------------------------------------------
+# 시간 / 랭킹
+# ---------------------------------------------------------
+
+function bombTime(sec: number) :: text:
+    set {_m} to floor({_sec} / 60)
+    set {_s} to {_sec} - ({_m} * 60)
+    if {_s} < 10:
+        return "%{_m}%:0%{_s}%"
+    return "%{_m}%:%{_s}%"
+
+function saveBombRank(seconds: number) :: number:
+    set {_team} to "말못함:%{bomb.mute}% / 못들음:%{bomb.deaf}% / 안보임:%{bomb.blind}%"
+    set {_insert} to 0
+
+    loop 10 times:
+        if {bomb.rank.time::%loop-number%} is not set:
+            set {_insert} to loop-number
+            stop loop
+        if {_seconds} < {bomb.rank.time::%loop-number%}:
+            set {_insert} to loop-number
+            stop loop
+
+    if {_insert} is 0:
+        return 0
+
+    loop 10 times:
+        set {_dest} to 11 - loop-number
+        if {_dest} > {_insert}:
+            set {_src} to {_dest} - 1
+            if {bomb.rank.time::%{_src}%} is set:
+                set {bomb.rank.time::%{_dest}%} to {bomb.rank.time::%{_src}%}
+                set {bomb.rank.team::%{_dest}%} to {bomb.rank.team::%{_src}%}
+            else:
+                delete {bomb.rank.time::%{_dest}%}
+                delete {bomb.rank.team::%{_dest}%}
+
+    set {bomb.rank.time::%{_insert}%} to {_seconds}
+    set {bomb.rank.team::%{_insert}%} to {_team}
+    return {_insert}
+
+function showBombRank(p: player):
+    send "&8&m------------------------------------------------" to {_p}
+    send "&c&l폭탄 해체 TOP 10" to {_p}
+    set {_has} to false
+
+    loop 10 times:
+        if {bomb.rank.time::%loop-number%} is set:
+            set {_has} to true
+            set {_t} to bombTime({bomb.rank.time::%loop-number%})
+            send "&e%loop-number%위 &f%{_t}% &8- &7%{bomb.rank.team::%loop-number%}%" to {_p}
+
+    if {_has} is false:
+        send "&7아직 성공 기록이 없습니다." to {_p}
+
+    send "&8&m------------------------------------------------" to {_p}
+
+# ---------------------------------------------------------
+# 패널 설치 / 랜덤 문제 생성
+# ---------------------------------------------------------
+
+function setPowerLamp(index: number, state: text):
+    set {_z} to 195 + {_index}
+    set {_loc} to location(18, 123, {_z}, world "world")
+    if {_state} is "ON":
+        set block at {_loc} to lime concrete
+    else:
+        set block at {_loc} to red concrete
+
+function setupNumberPanel():
+    # 위 0~4
+    loop 5 times:
+        set {_x} to 11 + loop-number
+        set block at location({_x}, 123, 194, world "world") to white concrete
+    # 아래 5~9
+    loop 5 times:
+        set {_x} to 11 + loop-number
+        set block at location({_x}, 122, 194, world "world") to white concrete
+
+function setupPowerPanel():
+    loop 4 times:
+        set {_z} to 195 + loop-number
+        set block at location(18, 122, {_z}, world "world") to light gray concrete
+        setPowerLamp(loop-number, {bomb.power.state::%loop-number%})
+
+function setupColorPanel():
+    loop 5 times:
+        set {_x} to 17 - loop-number
+        set {_name} to {bomb.color.name::%loop-number%}
+
+        if {_name} is "RED":
+            set block at location({_x}, 122, 202, world "world") to red concrete
+        if {_name} is "BLUE":
+            set block at location({_x}, 122, 202, world "world") to blue concrete
+        if {_name} is "GREEN":
+            set block at location({_x}, 122, 202, world "world") to lime concrete
+        if {_name} is "YELLOW":
+            set block at location({_x}, 122, 202, world "world") to yellow concrete
+        if {_name} is "PURPLE":
+            set block at location({_x}, 122, 202, world "world") to purple concrete
+
+function generateNumberProblem():
+    set {bomb.number.display} to random integer between 0 and 9
+    set {bomb.number.code} to random integer between 1 and 6
+    set {_d} to {bomb.number.display}
+    set {_c} to {bomb.number.code}
+
+    if {_c} is 1:
+        set {_a} to {_d} + 3
+        if {_a} >= 10:
+            subtract 10 from {_a}
+
+    if {_c} is 2:
+        set {_a} to 9 - {_d}
+
+    if {_c} is 3:
+        set {_a} to {_d} * 2
+        set {_tens} to floor({_a} / 10)
+        set {_a} to {_a} - ({_tens} * 10)
+
+    if {_c} is 4:
+        set {_even} to false
+        if {_d} is 0:
+            set {_even} to true
+        if {_d} is 2:
+            set {_even} to true
+        if {_d} is 4:
+            set {_even} to true
+        if {_d} is 6:
+            set {_even} to true
+        if {_d} is 8:
+            set {_even} to true
+
+        if {_even} is true:
+            set {_a} to floor({_d} / 2)
+        else:
+            set {_a} to {_d} + 5
+            if {_a} >= 10:
+                subtract 10 from {_a}
+
+    if {_c} is 5:
+        set {_a} to {_d} + 7
+        if {_a} >= 10:
+            subtract 10 from {_a}
+
+    if {_c} is 6:
+        set {_a} to {_d} * {_d}
+        set {_tens} to floor({_a} / 10)
+        set {_a} to {_a} - ({_tens} * 10)
+
+    set {bomb.number.answer} to {_a}
+
+function generateColorProblem():
+    delete {_pool::*}
+    add "RED" to {_pool::*}
+    add "BLUE" to {_pool::*}
+    add "GREEN" to {_pool::*}
+    add "YELLOW" to {_pool::*}
+    add "PURPLE" to {_pool::*}
+
+    loop 5 times:
+        set {_pick} to random element out of {_pool::*}
+        remove {_pick} from {_pool::*}
+        set {bomb.color.name::%loop-number%} to {_pick}
+        set {bomb.color.pos::%{_pick}%} to loop-number
+
+    set {bomb.color.code} to random integer between 1 and 8
+    set {_c} to {bomb.color.code}
+
+    if {_c} is 1:
+        set {_a} to {bomb.color.pos::RED} + 1
+        if {_a} > 5:
+            subtract 5 from {_a}
+
+    if {_c} is 2:
+        set {_a} to {bomb.color.pos::BLUE} - 1
+        if {_a} < 1:
+            add 5 to {_a}
+
+    if {_c} is 3:
+        set {_a} to {bomb.color.pos::GREEN} + 2
+        if {_a} > 5:
+            subtract 5 from {_a}
+
+    if {_c} is 4:
+        set {_a} to {bomb.color.pos::YELLOW} - 2
+        if {_a} < 1:
+            add 5 to {_a}
+
+    if {_c} is 5:
+        set {_a} to {bomb.color.pos::PURPLE}
+
+    if {_c} is 6:
+        set {_a} to {bomb.color.pos::RED} + {bomb.color.pos::BLUE}
+        if {_a} > 5:
+            subtract 5 from {_a}
+
+    if {_c} is 7:
+        set {_a} to {bomb.color.pos::GREEN} + {bomb.color.pos::YELLOW}
+        if {_a} > 5:
+            subtract 5 from {_a}
+
+    if {_c} is 8:
+        set {_r} to {bomb.color.pos::RED}
+        set {_p} to {bomb.color.pos::PURPLE}
+        if {_r} < {_p}:
+            set {_a} to {_r}
+        else:
+            set {_a} to {_p}
+
+    set {bomb.color.answer} to {_a}
+    setupColorPanel()
+
+function oppositeState(state: text) :: text:
+    if {_state} is "ON":
+        return "OFF"
+    return "ON"
+
+function generatePowerProblem():
+    set {_onCount} to 0
+
+    loop 4 times:
+        set {_r} to random integer between 0 and 1
+        if {_r} is 1:
+            set {bomb.power.state::%loop-number%} to "ON"
+            add 1 to {_onCount}
+        else:
+            set {bomb.power.state::%loop-number%} to "OFF"
+
+    set {bomb.power.code} to random integer between 1 and 8
+    set {_c} to {bomb.power.code}
+
+    # P1: 왼쪽 첫 OFF, 없으면 1번
+    if {_c} is 1:
+        set {_switch} to 0
+        loop 4 times:
+            if {_switch} is 0:
+                if {bomb.power.state::%loop-number%} is "OFF":
+                    set {_switch} to loop-number
+        if {_switch} is 0:
+            set {_switch} to 1
+
+    # P2: 오른쪽 첫 ON, 없으면 4번
+    if {_c} is 2:
+        set {_switch} to 0
+        set {_i} to 4
+        loop 4 times:
+            if {_switch} is 0:
+                if {bomb.power.state::%{_i}%} is "ON":
+                    set {_switch} to {_i}
+            subtract 1 from {_i}
+        if {_switch} is 0:
+            set {_switch} to 4
+
+    # P3: 1번 ON -> 2번, OFF -> 3번
+    if {_c} is 3:
+        if {bomb.power.state::1} is "ON":
+            set {_switch} to 2
+        else:
+            set {_switch} to 3
+
+    # P4: 4번 ON -> 3번, OFF -> 1번
+    if {_c} is 4:
+        if {bomb.power.state::4} is "ON":
+            set {_switch} to 3
+        else:
+            set {_switch} to 1
+
+    # P5: ON 0~1 -> 1 / 2 -> 2 / 3~4 -> 4
+    if {_c} is 5:
+        if {_onCount} <= 1:
+            set {_switch} to 1
+        if {_onCount} is 2:
+            set {_switch} to 2
+        if {_onCount} >= 3:
+            set {_switch} to 4
+
+    # P6: 2번 ON -> 4번, OFF -> 2번
+    if {_c} is 6:
+        if {bomb.power.state::2} is "ON":
+            set {_switch} to 4
+        else:
+            set {_switch} to 2
+
+    # P7: 1번과 4번 같음 -> 2번, 다름 -> 3번
+    if {_c} is 7:
+        if {bomb.power.state::1} is {bomb.power.state::4}:
+            set {_switch} to 2
+        else:
+            set {_switch} to 3
+
+    # P8: ON이 더 많음 -> 왼쪽 첫 ON / OFF가 더 많음 -> 왼쪽 첫 OFF / 2:2 -> 2번
+    if {_c} is 8:
+        if {_onCount} > 2:
+            set {_switch} to 0
+            loop 4 times:
+                if {_switch} is 0:
+                    if {bomb.power.state::%loop-number%} is "ON":
+                        set {_switch} to loop-number
+        if {_onCount} < 2:
+            set {_switch} to 0
+            loop 4 times:
+                if {_switch} is 0:
+                    if {bomb.power.state::%loop-number%} is "OFF":
+                        set {_switch} to loop-number
+        if {_onCount} is 2:
+            set {_switch} to 2
+
+    set {bomb.power.answerSwitch} to {_switch}
+    set {bomb.power.answerState} to oppositeState({bomb.power.state::%{_switch}%})
+    setupPowerPanel()
+
+function generateBombOrder():
+    delete {_pool::*}
+    add "NUMBER" to {_pool::*}
+    add "COLOR" to {_pool::*}
+    add "POWER" to {_pool::*}
+
+    loop 3 times:
+        set {_pick} to random element out of {_pool::*}
+        remove {_pick} from {_pool::*}
+        set {bomb.order::%loop-number%} to {_pick}
+
+# ---------------------------------------------------------
+# 단계 안내 / 종료
+# ---------------------------------------------------------
+
+function startBombStage():
+    delete {bomb.signal.text}
+    set {_module} to {bomb.order::%{bomb.stage}%}
+
+    if {_module} is "NUMBER":
+        set {_sub} to "N%{bomb.number.code}% / 표시 숫자 %{bomb.number.display}%"
+        send title "&e&l숫자 모듈" with subtitle "&f%{_sub}%" to {bomb.blind} for 6 seconds
+
+    if {_module} is "COLOR":
+        set {_sub} to "C%{bomb.color.code}%"
+        send title "&d&l색상 모듈" with subtitle "&f%{_sub}%" to {bomb.blind} for 6 seconds
+
+    if {_module} is "POWER":
+        set {_sub} to "P%{bomb.power.code}%"
+        send title "&a&lON/OFF 모듈" with subtitle "&f%{_sub}%" to {bomb.blind} for 6 seconds
+
+    send title "&c&l%{bomb.stage}% / 3" with subtitle "&f새 해체 단계가 시작되었습니다." to {bomb.mute} for 4 seconds
+    send title "&c&l%{bomb.stage}% / 3" with subtitle "&f새 해체 단계가 시작되었습니다." to {bomb.deaf} for 4 seconds
+
+function clearBombSession():
+    # 세 참가자의 상태 효과를 전부 제거
+    loop {bomb.players::*}:
+        if loop-value is online:
+            set {_n} to name of loop-value
+            execute console command "effect clear %{_n}%"
+
+    # 안 보이는 사람의 개인 시야 위장도 원상복구
+    if {bomb.blind} is set:
+        if {bomb.blind} is online:
+            set {_n} to name of {bomb.blind}
+            execute console command "bombvision clear %{_n}%"
+
+    delete {bomb.active}
+    delete {bomb.timer.running}
+    delete {bomb.timer.elapsed}
+    delete {bomb.timer.left}
+    delete {bomb.stage}
+    delete {bomb.order::*}
+    delete {bomb.signal.text}
+    delete {bomb.number.display}
+    delete {bomb.number.code}
+    delete {bomb.number.answer}
+    delete {bomb.color.name::*}
+    delete {bomb.color.pos::*}
+    delete {bomb.color.code}
+    delete {bomb.color.answer}
+    delete {bomb.power.state::*}
+    delete {bomb.power.code}
+    delete {bomb.power.answerSwitch}
+    delete {bomb.power.answerState}
+    delete {bomb.mute}
+    delete {bomb.deaf}
+    delete {bomb.blind}
+    delete {bomb.players::*}
+
+function bombExplode(reason: text):
+    if {bomb.active} is not true:
+        stop
+
+    set {bomb.active} to false
+    set {bomb.timer.running} to false
+
+    execute console command "particle minecraft:explosion_emitter 14 122 198 0 0 0 0 1 force"
+    execute console command "playsound minecraft:entity.generic.explode master @a 14 122 198 1 1"
+
+    loop {bomb.players::*}:
+        if loop-value is online:
+            send title "&4&l폭발" with subtitle "&c%{_reason}%" to loop-value for 4 seconds
+
+    # 실패 즉시 세 참가자의 상태 효과 제거
+    loop {bomb.players::*}:
+        if loop-value is online:
+            set {_n} to name of loop-value
+            execute console command "effect clear %{_n}%"
+
+    if {bomb.blind} is online:
+        set {_blindName} to name of {bomb.blind}
+        execute console command "bombvision clear %{_blindName}%"
+
+    wait 15 ticks
+
+    loop {bomb.players::*}:
+        if loop-value is online:
+            teleport loop-value to location(-1, 122, 184, world "world")
+            set gamemode of loop-value to survival
+            clear inventory of loop-value
+
+    clearBombSession()
+
+function completeBombModule():
+    set {_doneStage} to {bomb.stage}
+
+    if {_doneStage} < 3:
+        loop {bomb.players::*}:
+            if loop-value is online:
+                send title "&a&l모듈 해제" with subtitle "&f%{_doneStage}% / 3 완료" to loop-value for 3 seconds
+
+        add 1 to {bomb.stage}
+        wait 20 ticks
+        if {bomb.active} is true:
+            startBombStage()
+        stop
+
+    # 최종 성공
+    set {bomb.timer.running} to false
+    set {_seconds} to {bomb.timer.elapsed}
+    set {_time} to bombTime({_seconds})
+    set {_rank} to saveBombRank({_seconds})
+    set {bomb.active} to false
+
+    # 성공 즉시 세 참가자의 상태 효과 제거
+    loop {bomb.players::*}:
+        if loop-value is online:
+            set {_n} to name of loop-value
+            execute console command "effect clear %{_n}%"
+
+    if {bomb.blind} is online:
+        set {_blindName} to name of {bomb.blind}
+        execute console command "bombvision clear %{_blindName}%"
+
+    loop {bomb.players::*}:
+        if loop-value is online:
+            if {_rank} > 0:
+                send title "&a&l폭탄 해체 성공!" with subtitle "&f기록 %{_time}% &e- TOP %{_rank}%위" to loop-value for 7 seconds
+            else:
+                send title "&a&l폭탄 해체 성공!" with subtitle "&f기록 %{_time}%" to loop-value for 7 seconds
+
+    wait 50 ticks
+
+    loop {bomb.players::*}:
+        if loop-value is online:
+            teleport loop-value to location(-1, 122, 184, world "world")
+            set gamemode of loop-value to survival
+            clear inventory of loop-value
+
+    clearBombSession()
+
+# ---------------------------------------------------------
+# 게임 시작
+# ---------------------------------------------------------
+
+function startBombGame(mute: player, deaf: player, blind: player, starter: player):
+    if {bomb.active} is true:
+        send "{@bomb-prefix}&c이미 게임이 진행 중입니다." to {_starter}
+        stop
+
+    if {_mute} is {_deaf}:
+        send "{@bomb-prefix}&c세 역할은 서로 다른 플레이어여야 합니다." to {_starter}
+        stop
+    if {_mute} is {_blind}:
+        send "{@bomb-prefix}&c세 역할은 서로 다른 플레이어여야 합니다." to {_starter}
+        stop
+    if {_deaf} is {_blind}:
+        send "{@bomb-prefix}&c세 역할은 서로 다른 플레이어여야 합니다." to {_starter}
+        stop
+
+    set {bomb.mute} to {_mute}
+    set {bomb.deaf} to {_deaf}
+    set {bomb.blind} to {_blind}
+
+    delete {bomb.players::*}
+    add {_mute} to {bomb.players::*}
+    add {_deaf} to {bomb.players::*}
+    add {_blind} to {bomb.players::*}
+
+    # 문제 생성
+    generateBombOrder()
+    generateNumberProblem()
+    generateColorProblem()
+    generatePowerProblem()
+    setupNumberPanel()
+
+    # 인벤토리 / 잔여 효과 정리 / 이동 / 모드
+    loop {bomb.players::*}:
+        clear inventory of loop-value
+        if loop-value is online:
+            set {_n} to name of loop-value
+            execute console command "effect clear %{_n}%"
+
+    teleport {_blind} to location(14, 122, 198, world "world")
+    teleport {_deaf} to location(17, 122, 195, world "world")
+    teleport {_mute} to location(10, 122, 210, world "world")
+
+    set gamemode of {_mute} to survival
+    set gamemode of {_deaf} to survival
+    set gamemode of {_blind} to adventure
+
+    # B 매뉴얼 지급 / A 시야 적용
+    set {_muteName} to name of {_mute}
+    set {_blindName} to name of {_blind}
+    execute console command "bombmanual %{_muteName}%"
+    execute console command "effect give %{_blindName}% minecraft:blindness infinite 0 true"
+    execute console command "bombvision apply %{_blindName}%"
+
+    set {bomb.stage} to 1
+    set {bomb.timer.elapsed} to 0
+    set {bomb.timer.left} to {@bomb-limit}
+    set {bomb.timer.running} to true
+    set {bomb.active} to true
+
+    send "{@bomb-prefix}&a게임을 시작했습니다." to {_starter}
+    send "&7말 못함(B): &f%{_mute}%" to {_starter}
+    send "&7못 들음(C): &f%{_deaf}%" to {_starter}
+    send "&7안 보임(A): &f%{_blind}%" to {_starter}
+
+    send title "&c&l말 못하는 역할" with subtitle "&f매뉴얼 + /폭탄통신의 14개 신호만 사용" to {_mute} for 6 seconds
+    send title "&b&l못 듣는 역할" with subtitle "&fB의 화면 신호를 읽고 A에게 전달하세요." to {_deaf} for 6 seconds
+    send title "&8&l안 보이는 역할" with subtitle "&f폭탄을 직접 조작합니다." to {_blind} for 6 seconds
+
+    wait 3 seconds
+    if {bomb.active} is true:
+        startBombStage()
+
+# ---------------------------------------------------------
+# 메인 GUI / 역할 선택 GUI
+# ---------------------------------------------------------
+
+function openBombMain(p: player):
+    set {_gui} to chest inventory with 3 rows named "폭탄게임 관리"
+    set slot 11 of {_gui} to tnt named "&c&l게임 시작"
+    set slot 13 of {_gui} to gold ingot named "&e&l랭킹"
+    set slot 15 of {_gui} to barrier named "&4&l게임 강제 종료"
+    open {_gui} to {_p}
+
+function openBombMuteSelect(p: player):
+    set {_key} to "%{_p}%"
+    delete {bomb.gui.map::%{_key}%::*}
+    delete {bomb.gui.mute::%{_key}%}
+    delete {bomb.gui.deaf::%{_key}%}
+    delete {bomb.gui.blind::%{_key}%}
+
+    set {_gui} to chest inventory with 6 rows named "역할 선택 - 말 못함"
+    set {_slot} to 0
+    loop all players:
+        if {_slot} < 53:
+            set slot {_slot} of {_gui} to paper named "&f%loop-player%"
+            set {bomb.gui.map::%{_key}%::%{_slot}%} to loop-player
+            add 1 to {_slot}
+    set slot 53 of {_gui} to barrier named "&c취소"
+    open {_gui} to {_p}
+
+function openBombDeafSelect(p: player):
+    set {_key} to "%{_p}%"
+    delete {bomb.gui.map::%{_key}%::*}
+    set {_mute} to {bomb.gui.mute::%{_key}%}
+
+    set {_gui} to chest inventory with 6 rows named "역할 선택 - 못 들음"
+    set {_slot} to 0
+    loop all players:
+        if loop-player is not {_mute}:
+            if {_slot} < 53:
+                set slot {_slot} of {_gui} to paper named "&f%loop-player%"
+                set {bomb.gui.map::%{_key}%::%{_slot}%} to loop-player
+                add 1 to {_slot}
+    set slot 53 of {_gui} to barrier named "&c취소"
+    open {_gui} to {_p}
+
+function openBombBlindSelect(p: player):
+    set {_key} to "%{_p}%"
+    delete {bomb.gui.map::%{_key}%::*}
+    set {_mute} to {bomb.gui.mute::%{_key}%}
+    set {_deaf} to {bomb.gui.deaf::%{_key}%}
+
+    set {_gui} to chest inventory with 6 rows named "역할 선택 - 안 보임"
+    set {_slot} to 0
+    loop all players:
+        if loop-player is not {_mute}:
+            if loop-player is not {_deaf}:
+                if {_slot} < 53:
+                    set slot {_slot} of {_gui} to paper named "&f%loop-player%"
+                    set {bomb.gui.map::%{_key}%::%{_slot}%} to loop-player
+                    add 1 to {_slot}
+    set slot 53 of {_gui} to barrier named "&c취소"
+    open {_gui} to {_p}
+
+function openBombConfirm(p: player):
+    set {_key} to "%{_p}%"
+    set {_mute} to {bomb.gui.mute::%{_key}%}
+    set {_deaf} to {bomb.gui.deaf::%{_key}%}
+    set {_blind} to {bomb.gui.blind::%{_key}%}
+
+    set {_gui} to chest inventory with 3 rows named "폭탄게임 시작 확인"
+    set slot 10 of {_gui} to red wool named "&c말 못함: &f%{_mute}%"
+    set slot 12 of {_gui} to light blue wool named "&b못 들음: &f%{_deaf}%"
+    set slot 14 of {_gui} to black wool named "&8안 보임: &f%{_blind}%"
+    set slot 16 of {_gui} to lime concrete named "&a&l이 역할로 시작"
+    set slot 22 of {_gui} to barrier named "&c취소"
+    open {_gui} to {_p}
+
+# ---------------------------------------------------------
+# B 전용 통신 GUI
+# ---------------------------------------------------------
+
+function openBombSignal(p: player):
+    set {_gui} to chest inventory with 3 rows named "폭탄 통신 패널"
+
+    set slot 0 of {_gui} to white concrete named "&f&l0"
+    set slot 1 of {_gui} to white concrete named "&f&l1"
+    set slot 2 of {_gui} to white concrete named "&f&l2"
+    set slot 3 of {_gui} to white concrete named "&f&l3"
+    set slot 4 of {_gui} to white concrete named "&f&l4"
+    set slot 5 of {_gui} to white concrete named "&f&l5"
+    set slot 6 of {_gui} to white concrete named "&f&l6"
+    set slot 7 of {_gui} to white concrete named "&f&l7"
+    set slot 8 of {_gui} to white concrete named "&f&l8"
+    set slot 9 of {_gui} to white concrete named "&f&l9"
+
+    set slot 18 of {_gui} to lime wool named "&a&lㅇㅇ"
+    set slot 19 of {_gui} to red wool named "&c&lㄴㄴ"
+    set slot 20 of {_gui} to orange wool named "&6&lㅗㅗ"
+    set slot 21 of {_gui} to blue wool named "&9&lㅠㅠ"
+
+    open {_gui} to {_p}
+
+function pushBombSignal(token: text):
+    if {bomb.signal.text} is set:
+        set {bomb.signal.text} to "%{bomb.signal.text}% %{_token}%"
+    else:
+        set {bomb.signal.text} to "%{_token}%"
+
+    if {bomb.deaf} is online:
+        send title "&d&l%{_token}%" with subtitle "&7B 통신 패널 수신" to {bomb.deaf} for 2 seconds
+
+# ---------------------------------------------------------
+# 명령어
+# ---------------------------------------------------------
+
+command /폭탄게임:
+    permission: op
+    trigger:
+        if sender is not a player:
+            send "게임 안에서 실행해 주세요."
+            stop
+        openBombMain(player)
+
+command /폭탄게임시작 <player> <player> <player>:
+    permission: op
+    trigger:
+        if sender is not a player:
+            send "게임 안에서 실행해 주세요."
+            stop
+        startBombGame(argument 1, argument 2, argument 3, player)
+
+command /폭탄통신:
+    trigger:
+        if {bomb.active} is not true:
+            send "{@bomb-prefix}&c진행 중인 게임이 없습니다."
+            stop
+        if player is not {bomb.mute}:
+            send "{@bomb-prefix}&c말 못하는 역할만 사용할 수 있습니다."
+            stop
+        openBombSignal(player)
+
+command /폭탄랭킹:
+    trigger:
+        showBombRank(player)
+
+command /폭탄게임종료:
+    permission: op
+    trigger:
+        if {bomb.active} is not true:
+            send "{@bomb-prefix}&7진행 중인 게임이 없습니다."
+            stop
+
+        if {bomb.blind} is online:
+            set {_blindName} to name of {bomb.blind}
+            execute console command "bombvision clear %{_blindName}%"
+
+        loop {bomb.players::*}:
+            if loop-value is online:
+                set {_n} to name of loop-value
+                execute console command "effect clear %{_n}%"
+                teleport loop-value to location(-1, 122, 184, world "world")
+                set gamemode of loop-value to survival
+                clear inventory of loop-value
+
+        clearBombSession()
+        send "{@bomb-prefix}&c게임을 강제 종료했습니다."
+
+# ---------------------------------------------------------
+# GUI 클릭 처리
+# ---------------------------------------------------------
+
+on inventory click:
+    if name of event-inventory is "폭탄게임 관리":
+        cancel event
+        if event-slot is not set:
+            stop
+        set {_slot} to index of event-slot
+
+        if {_slot} is 11:
+            close player's inventory
+            wait 1 tick
+            openBombMuteSelect(player)
+            stop
+
+        if {_slot} is 13:
+            close player's inventory
+            showBombRank(player)
+            stop
+
+        if {_slot} is 15:
+            close player's inventory
+            if {bomb.active} is true:
+                if {bomb.blind} is online:
+                    set {_blindName} to name of {bomb.blind}
+                    execute console command "bombvision clear %{_blindName}%"
+                loop {bomb.players::*}:
+                    if loop-value is online:
+                        set {_n} to name of loop-value
+                        execute console command "effect clear %{_n}%"
+                        teleport loop-value to location(-1, 122, 184, world "world")
+                        set gamemode of loop-value to survival
+                        clear inventory of loop-value
+                clearBombSession()
+            stop
+
+    if name of event-inventory is "역할 선택 - 말 못함":
+        cancel event
+        if event-slot is not set:
+            stop
+        set {_slot} to index of event-slot
+        if {_slot} is 53:
+            close player's inventory
+            stop
+        set {_key} to "%player%"
+        set {_target} to {bomb.gui.map::%{_key}%::%{_slot}%}
+        if {_target} is not set:
+            stop
+        set {bomb.gui.mute::%{_key}%} to {_target}
+        close player's inventory
+        wait 1 tick
+        openBombDeafSelect(player)
+        stop
+
+    if name of event-inventory is "역할 선택 - 못 들음":
+        cancel event
+        if event-slot is not set:
+            stop
+        set {_slot} to index of event-slot
+        if {_slot} is 53:
+            close player's inventory
+            stop
+        set {_key} to "%player%"
+        set {_target} to {bomb.gui.map::%{_key}%::%{_slot}%}
+        if {_target} is not set:
+            stop
+        set {bomb.gui.deaf::%{_key}%} to {_target}
+        close player's inventory
+        wait 1 tick
+        openBombBlindSelect(player)
+        stop
+
+    if name of event-inventory is "역할 선택 - 안 보임":
+        cancel event
+        if event-slot is not set:
+            stop
+        set {_slot} to index of event-slot
+        if {_slot} is 53:
+            close player's inventory
+            stop
+        set {_key} to "%player%"
+        set {_target} to {bomb.gui.map::%{_key}%::%{_slot}%}
+        if {_target} is not set:
+            stop
+        set {bomb.gui.blind::%{_key}%} to {_target}
+        close player's inventory
+        wait 1 tick
+        openBombConfirm(player)
+        stop
+
+    if name of event-inventory is "폭탄게임 시작 확인":
+        cancel event
+        if event-slot is not set:
+            stop
+        set {_slot} to index of event-slot
+        set {_key} to "%player%"
+
+        if {_slot} is 16:
+            set {_mute} to {bomb.gui.mute::%{_key}%}
+            set {_deaf} to {bomb.gui.deaf::%{_key}%}
+            set {_blind} to {bomb.gui.blind::%{_key}%}
+            close player's inventory
+
+            if {_mute} is not set:
+                stop
+            if {_deaf} is not set:
+                stop
+            if {_blind} is not set:
+                stop
+
+            startBombGame({_mute}, {_deaf}, {_blind}, player)
+
+            delete {bomb.gui.map::%{_key}%::*}
+            delete {bomb.gui.mute::%{_key}%}
+            delete {bomb.gui.deaf::%{_key}%}
+            delete {bomb.gui.blind::%{_key}%}
+            stop
+
+        if {_slot} is 22:
+            close player's inventory
+            stop
+
+    if name of event-inventory is "폭탄 통신 패널":
+        cancel event
+
+        if {bomb.active} is not true:
+            close player's inventory
+            stop
+        if player is not {bomb.mute}:
+            close player's inventory
+            stop
+        if event-slot is not set:
+            stop
+
+        set {_slot} to index of event-slot
+        delete {_token}
+
+        if {_slot} is 0:
+            set {_token} to "0"
+        if {_slot} is 1:
+            set {_token} to "1"
+        if {_slot} is 2:
+            set {_token} to "2"
+        if {_slot} is 3:
+            set {_token} to "3"
+        if {_slot} is 4:
+            set {_token} to "4"
+        if {_slot} is 5:
+            set {_token} to "5"
+        if {_slot} is 6:
+            set {_token} to "6"
+        if {_slot} is 7:
+            set {_token} to "7"
+        if {_slot} is 8:
+            set {_token} to "8"
+        if {_slot} is 9:
+            set {_token} to "9"
+        if {_slot} is 18:
+            set {_token} to "ㅇㅇ"
+        if {_slot} is 19:
+            set {_token} to "ㄴㄴ"
+        if {_slot} is 20:
+            set {_token} to "ㅗㅗ"
+        if {_slot} is 21:
+            set {_token} to "ㅠㅠ"
+
+        if {_token} is set:
+            pushBombSignal({_token})
+        stop
+
+# ---------------------------------------------------------
+# 채팅 제한
+# ---------------------------------------------------------
+
+on chat:
+    if {bomb.active} is not true:
+        stop
+
+    # B는 문자 전달 금지
+    if player is {bomb.mute}:
+        cancel event
+        send action bar "&c말 못하는 역할은 채팅을 사용할 수 없습니다." to player
+        stop
+
+    # C는 일반 플레이어 채팅을 볼 수 없음
+    if {bomb.deaf} is online:
+        remove {bomb.deaf} from chat recipients
+
+# ---------------------------------------------------------
+# 타이머 / HUD
+# ---------------------------------------------------------
+
+every 1 second:
+    if {bomb.active} is not true:
+        stop
+
+    if {bomb.timer.running} is true:
+        add 1 to {bomb.timer.elapsed}
+        subtract 1 from {bomb.timer.left}
+
+    if {bomb.timer.left} <= 0:
+        bombExplode("제한시간 초과")
+        stop
+
+    set {_left} to bombTime({bomb.timer.left})
+    set {_module} to {bomb.order::%{bomb.stage}%}
+
+    # A: 현재 문제의 핵심 정보만 표시
+    if {bomb.blind} is online:
+        if {_module} is "NUMBER":
+            send action bar "&c폭발까지 %{_left}% &8| &f%{bomb.stage}%/3 &8| &eN%{bomb.number.code}% &f표시:%{bomb.number.display}%" to {bomb.blind}
+        if {_module} is "COLOR":
+            send action bar "&c폭발까지 %{_left}% &8| &f%{bomb.stage}%/3 &8| &dC%{bomb.color.code}%" to {bomb.blind}
+        if {_module} is "POWER":
+            send action bar "&c폭발까지 %{_left}% &8| &f%{bomb.stage}%/3 &8| &aP%{bomb.power.code}%" to {bomb.blind}
+
+    # B: 문제 코드가 뜨지 않음. A에게 들어야 함.
+    if {bomb.mute} is online:
+        send action bar "&c폭발까지 %{_left}% &8| &f%{bomb.stage}%/3 &8| &7/폭탄통신" to {bomb.mute}
+
+    # C: B 통신 이력 표시
+    if {bomb.deaf} is online:
+        if {bomb.signal.text} is set:
+            send action bar "&c폭발까지 %{_left}% &8| &f%{bomb.stage}%/3 &8| &d수신: &f%{bomb.signal.text}%" to {bomb.deaf}
+        else:
+            send action bar "&c폭발까지 %{_left}% &8| &f%{bomb.stage}%/3 &8| &d수신: &7-" to {bomb.deaf}
+
+# ---------------------------------------------------------
+# A의 폭탄 조작
+# 1인 보물찾기에서 검증한 방식과 동일하게:
+# 모든 우클릭을 받은 후 블록 좌표를 floor()로 정수화해서 직접 판정
+# ---------------------------------------------------------
+
+on any right click with priority highest:
+    if {bomb.active} is not true:
+        stop
+    if player is not {bomb.blind}:
+        stop
+    if clicked block is not set:
+        stop
+
+    set {_x} to floor(x-coordinate of clicked block)
+    set {_y} to floor(y-coordinate of clicked block)
+    set {_z} to floor(z-coordinate of clicked block)
+    set {_module} to {bomb.order::%{bomb.stage}%}
+
+    # 숫자 패널: x 12~16 / y 122~123 / z 194
+    if {_module} is "NUMBER":
+        if {_z} is 194:
+            if {_x} >= 12:
+                if {_x} <= 16:
+                    if {_y} is 123:
+                        set {_digit} to {_x} - 12
+                        if {_digit} is {bomb.number.answer}:
+                            completeBombModule()
+                        else:
+                            bombExplode("숫자 모듈 오답")
+                        stop
+
+                    if {_y} is 122:
+                        set {_digit} to 5 + ({_x} - 12)
+                        if {_digit} is {bomb.number.answer}:
+                            completeBombModule()
+                        else:
+                            bombExplode("숫자 모듈 오답")
+                        stop
+
+    # 색상 패널: x16~12 / y122 / z202, 왼쪽부터 1~5
+    if {_module} is "COLOR":
+        if {_y} is 122:
+            if {_z} is 202:
+                if {_x} >= 12:
+                    if {_x} <= 16:
+                        set {_pos} to 17 - {_x}
+                        if {_pos} is {bomb.color.answer}:
+                            completeBombModule()
+                        else:
+                            bombExplode("색상 모듈 오답")
+                        stop
+
+    # ON/OFF 조작부: x18 / y122 / z196~199
+    if {_module} is "POWER":
+        if {_x} is 18:
+            if {_y} is 122:
+                if {_z} >= 196:
+                    if {_z} <= 199:
+                        set {_switch} to {_z} - 195
+
+                        if {_switch} is not {bomb.power.answerSwitch}:
+                            bombExplode("ON/OFF 모듈 오답")
+                            stop
+
+                        # 정답 스위치면 상태를 실제로 뒤집고 성공
+                        set {_newState} to oppositeState({bomb.power.state::%{_switch}%})
+                        set {bomb.power.state::%{_switch}%} to {_newState}
+                        setPowerLamp({_switch}, {_newState})
+                        completeBombModule()
+                        stop
+
+# ---------------------------------------------------------
+# 게임 중 파괴/설치 방지
+# ---------------------------------------------------------
+
+on break:
+    if {bomb.active} is not true:
+        stop
+    if player is {bomb.mute}:
+        cancel event
+    if player is {bomb.deaf}:
+        cancel event
+    if player is {bomb.blind}:
+        cancel event
+
+on place:
+    if {bomb.active} is not true:
+        stop
+    if player is {bomb.mute}:
+        cancel event
+    if player is {bomb.deaf}:
+        cancel event
+    if player is {bomb.blind}:
+        cancel event
+
+# ---------------------------------------------------------
+# 참가자 이탈 시 안전 종료
+# ---------------------------------------------------------
+
+on quit:
+    if {bomb.active} is not true:
+        stop
+
+    set {_isPlayer} to false
+    if player is {bomb.mute}:
+        set {_isPlayer} to true
+    if player is {bomb.deaf}:
+        set {_isPlayer} to true
+    if player is {bomb.blind}:
+        set {_isPlayer} to true
+
+    if {_isPlayer} is true:
+        set {_quitName} to name of player
+        execute console command "effect clear %{_quitName}%"
+
+        if {bomb.blind} is online:
+            set {_blindName} to name of {bomb.blind}
+            execute console command "bombvision clear %{_blindName}%"
+
+        clearBombSession()

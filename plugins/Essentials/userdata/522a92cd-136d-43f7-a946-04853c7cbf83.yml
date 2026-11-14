@@ -1,0 +1,39 @@
+teleportenabled: true
+teleportauto: false
+godmode: false
+flymode: false
+muted: false
+jailed: false
+ip-address: 210.98.151.54
+afk: false
+socialspy: false
+npc: false
+powertoolsenabled: true
+accepting-pay: true
+baltop-exempt: false
+timestamps:
+  lastteleport: 0
+  lastheal: 0
+  mute: 0
+  jail: 0
+  onlinejail: 0
+  logout: 1790964860027
+  login: 1790958331627
+money: '0'
+last-account-name: PASECO
+lastlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: 9.5
+  y: 176.0
+  z: 53.5
+  yaw: 83.24639892578125
+  pitch: 83.24640655517578
+logoutlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: -1.625679326708975
+  y: 121.0
+  z: 44.38455680978571
+  yaw: -51.52284622192383
+  pitch: 4.7092204093933105

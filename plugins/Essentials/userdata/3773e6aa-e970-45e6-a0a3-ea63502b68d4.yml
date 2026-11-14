@@ -1,0 +1,39 @@
+teleportenabled: true
+teleportauto: false
+godmode: false
+flymode: false
+muted: false
+jailed: false
+ip-address: 203.241.126.198
+afk: false
+socialspy: false
+npc: false
+powertoolsenabled: true
+accepting-pay: true
+baltop-exempt: false
+timestamps:
+  lastteleport: 0
+  lastheal: 0
+  mute: 0
+  jail: 0
+  onlinejail: 0
+  logout: 1794533546640
+  login: 1794533537722
+money: '0'
+last-account-name: fish09012
+lastlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: -3.656267862111562
+  y: 122.0
+  z: 51.32476042750104
+  yaw: -134.25033569335938
+  pitch: -3.899984121322632
+logoutlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: 0.0
+  y: 121.0
+  z: 42.0
+  yaw: 4.350000858306885
+  pitch: 1.3499999046325684

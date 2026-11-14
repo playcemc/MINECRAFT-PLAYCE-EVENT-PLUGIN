@@ -1,0 +1,39 @@
+teleportenabled: true
+teleportauto: false
+godmode: false
+flymode: false
+muted: false
+jailed: false
+ip-address: 58.79.213.122
+afk: false
+socialspy: false
+npc: false
+powertoolsenabled: true
+accepting-pay: true
+baltop-exempt: false
+timestamps:
+  lastteleport: 0
+  lastheal: 0
+  mute: 0
+  jail: 0
+  onlinejail: 0
+  logout: 1791208741123
+  login: 1791208449401
+money: '0'
+last-account-name: raegyu_03
+logoutlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: 8.895143636116071
+  y: 121.0
+  z: 41.54372924894524
+  yaw: 114.84703063964844
+  pitch: 4.1999359130859375
+lastlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: -31.69999998807907
+  y: 135.7531999805212
+  z: 41.69999998807907
+  yaw: -126.80099487304688
+  pitch: 60.06166076660156

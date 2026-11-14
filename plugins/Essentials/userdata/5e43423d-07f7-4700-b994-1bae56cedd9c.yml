@@ -1,0 +1,48 @@
+teleportenabled: true
+teleportauto: false
+godmode: false
+flymode: false
+muted: false
+jailed: false
+ip-address: 1.228.250.35
+afk: false
+socialspy: false
+npc: false
+powertoolsenabled: true
+accepting-pay: true
+baltop-exempt: false
+timestamps:
+  lastteleport: 1791208419517
+  lastheal: 0
+  mute: 0
+  jail: 0
+  onlinejail: 0
+  logout: 1793845735256
+  login: 1793816957698
+money: '0'
+last-account-name: MysteryTime_
+logoutlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: 28.71695036839383
+  y: 134.41362963649973
+  z: 43.02922035057475
+  yaw: -106.67350006103516
+  pitch: 8.659167289733887
+lastlocation:
+  world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+  world-name: world
+  x: -2.505625477584785
+  y: 162.0275982206464
+  z: 97.86250001192093
+  yaw: 137.925537109375
+  pitch: 51.76515197753906
+homes:
+  home:
+    world: 2cbccefb-4dae-4aba-91d7-22b6cffb670e
+    world-name: world
+    x: -11.383526504129524
+    y: 15.0
+    z: -277.2584748532355
+    yaw: 2.982025146484375
+    pitch: 4.350033760070801

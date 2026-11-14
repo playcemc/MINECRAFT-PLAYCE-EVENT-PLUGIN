@@ -1,0 +1,21 @@
+# Runtime-generated plugin data
+**/database.db
+**/database.db-journal
+**/database.db-shm
+**/database.db-wal
+**/*.db
+**/*.db-journal
+**/*.db-shm
+**/*.db-wal
+**/logs/
+**/cache/
+**/backups/
+**/*.csv
+**/*.csv.gz
+**/*.log
+
+# Local IDE and OS files
+.DS_Store
+Thumbs.db
+*.tmp
+*.bak

@@ -1,0 +1,85 @@
+inventory:
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- ==: org.bukkit.inventory.ItemStack
+  v: 3955
+  type: AMETHYST_SHARD
+  meta:
+    ==: ItemMeta
+    meta-type: UNSPECIFIC
+    display-name: '{"text":"","extra":[{"text":"구름폰","obfuscated":false,"italic":false,"underlined":false,"strikethrough":false,"color":"aqua","bold":true}]}'
+    lore:
+    - '{"text":"","extra":[{"text":"주 손에 들고 우클릭","obfuscated":false,"italic":false,"underlined":false,"strikethrough":false,"color":"gray","bold":false}]}'
+    - '{"text":"","extra":[{"text":"참가 · 희망 역할 · 마법서 · 참가 현황","obfuscated":false,"italic":false,"underlined":false,"strikethrough":false,"color":"white","bold":false}]}'
+    custom-model-data: 730129
+    PublicBukkitValues: |-
+      {
+          "playcecopsandrobbers:cloud-phone": 1b
+      }
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+- null
+inventory-count: 1
+location:
+  ==: org.bukkit.Location
+  world: world
+  x: -16.05935668380509
+  y: 121.0
+  z: 39.93880105365272
+  pitch: 11.921257
+  yaw: 97.580055
+mode: SURVIVAL
+health: 20.0
+food: 20
+saturation: 20.0
+exhaustion: 2.123
+level: 0
+exp: 0.0
+totalExp: 0
+effects: []
+allowFlight: false
+flying: false
+walk: 0.2
+fly: 0.1
+glowing: false
+fire: -20
+air: 300
+absorption: 0.0
+held: 8
+maxHealth: 20.0
+sneakSpeed: 0.3
